@@ -32,11 +32,6 @@ void testDatabase(const vector<vector<cv::Mat > > &features);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-// number of training images
-const int NIMAGES = 4;
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 void wait()
 {
   cout << endl << "Press enter to continue" << endl;
@@ -71,7 +66,6 @@ int main(int argc, char* argv[])
 void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path)
 {
   features.clear();
-  features.reserve(NIMAGES);
 
   cv::Ptr<cv::ORB> orb = cv::ORB::create();
 
@@ -124,10 +118,10 @@ void testVocCreation(const vector<vector<cv::Mat > > &features)
   // lets do something with this vocabulary
   cout << "Matching images against themselves (0 low, 1 high): " << endl;
   BowVector v1, v2;
-  for(int i = 0; i < NIMAGES; i++)
+  for(int i = 0; i < features.size(); i++)
   {
     voc.transform(features[i], v1);
-    for(int j = 0; j < NIMAGES; j++)
+    for(int j = 0; j < features.size(); j++)
     {
       voc.transform(features[j], v2);
       
@@ -158,7 +152,7 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   // db creates a copy of the vocabulary, we may get rid of "voc" now
 
   // add images to the database
-  for(int i = 0; i < NIMAGES; i++)
+  for(int i = 0; i < features.size(); i++)
   {
     db.add(features[i]);
   }
@@ -171,7 +165,7 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   cout << "Querying the database: " << endl;
 
   QueryResults ret;
-  for(int i = 0; i < NIMAGES; i++)
+  for(int i = 0; i < features.size(); i++)
   {
     db.query(features[i], ret, 4);
 
