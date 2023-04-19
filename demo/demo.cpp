@@ -26,7 +26,7 @@ using namespace std;
 
 void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path, vector<string> &img_names);
 void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out);
-void testVocCreation(const vector<vector<cv::Mat > > &features, const vector<string> &img_names);
+void testVocCreation(const vector<vector<cv::Mat > > &memory_imgs, const vector<vector<cv::Mat > > &target_imgs, const vector<string> &memory_img_names, const vector<string> &target_img_names);
 void testDatabase(const vector<vector<cv::Mat > > &features);
 
 
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
   vector<string> target_img_names;
   loadFeatures(targets, target_dir, target_img_names);
 
-  testVocCreation(memory, memory_img_names);
+  testVocCreation(memory, targets, memory_img_names, target_img_names);
 
   wait();
 
@@ -77,6 +77,7 @@ void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_pa
   cout << "Extracting ORB features..." << endl;
   for (const auto & entry : std::experimental::filesystem::directory_iterator(img_path)) {
     std::string img_name = entry.path();
+    std::cout << "Found img: " << img_name << "\n";
     img_names.push_back(img_name);
     cv::Mat image = cv::imread(img_name, 0);
     cv::Mat mask;
@@ -104,7 +105,11 @@ void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out)
 
 // ----------------------------------------------------------------------------
 
-void testVocCreation(const vector<vector<cv::Mat > > &features, const vector<string> &img_names)
+void testVocCreation(
+  const vector<vector<cv::Mat > > &memory_imgs,
+  const vector<vector<cv::Mat > > &target_imgs,
+  const vector<string> &memory_img_names,
+  const vector<string> &target_img_names)
 {
   // branching factor and depth levels 
   const int k = 9;
@@ -115,7 +120,7 @@ void testVocCreation(const vector<vector<cv::Mat > > &features, const vector<str
   OrbVocabulary voc(k, L, weight, scoring);
 
   cout << "Creating a small " << k << "^" << L << " vocabulary..." << endl;
-  voc.create(features);
+  voc.create(memory_imgs);
   cout << "... done!" << endl;
 
   cout << "Vocabulary information: " << endl
@@ -124,15 +129,15 @@ void testVocCreation(const vector<vector<cv::Mat > > &features, const vector<str
   // lets do something with this vocabulary
   cout << "Matching images against themselves (0 low, 1 high): " << endl;
   BowVector v1, v2;
-  for(int i = 0; i < features.size(); i++)
+  for(int i = 0; i < target_imgs.size(); i++)
   {
-    voc.transform(features[i], v1);
-    for(int j = 0; j < features.size(); j++)
+    voc.transform(target_imgs[i], v1);
+    for(int j = 0; j < memory_imgs.size(); j++)
     {
-      voc.transform(features[j], v2);
+      voc.transform(memory_imgs[j], v2);
       
       double score = voc.score(v1, v2);
-      cout << "Image " << img_names[i] << " vs Image " << img_names[j] << ": " << score << endl;
+      cout << "Target " << target_img_names[i] << " vs Memory " << memory_img_names[j] << ": " << score << endl;
     }
   }
 
