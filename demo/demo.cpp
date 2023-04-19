@@ -24,9 +24,9 @@ using namespace std;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path);
+void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path, vector<string> &img_names);
 void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out);
-void testVocCreation(const vector<vector<cv::Mat > > &features);
+void testVocCreation(const vector<vector<cv::Mat > > &features, const vector<string> &img_names);
 void testDatabase(const vector<vector<cv::Mat > > &features);
 
 
@@ -43,35 +43,41 @@ void wait()
 int main(int argc, char* argv[])
 {
   if (argc != 3) {
-    std::cout << "Usage: ./demo <IMG_DIR> <INCOMING_IMG>\n";
+    std::cout << "Usage: ./demo <MEMORY_DIR> <TARGET_IMG_DIR>\n";
     return -1;
   }
-  std::string img_dir = argv[1];
-  std::string incoming_img = argv[2];
+  std::string memory_dir = argv[1];
+  std::string target_dir = argv[2];
 
-  vector<vector<cv::Mat > > features;
-  loadFeatures(features, img_dir);
+  vector<vector<cv::Mat > > memory;
+  vector<string> memory_img_names;
+  loadFeatures(memory, memory_dir, memory_img_names);
+  vector<vector<cv::Mat> > targets;
+  vector<string> target_img_names;
+  loadFeatures(targets, target_dir, target_img_names);
 
-  testVocCreation(features);
+  testVocCreation(memory, memory_img_names);
 
   wait();
 
-  testDatabase(features);
+  testDatabase(memory);
 
   return 0;
 }
 
 // ----------------------------------------------------------------------------
 
-void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path)
+void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path, vector<string> &img_names)
 {
   features.clear();
+  img_names.clear();
 
   cv::Ptr<cv::ORB> orb = cv::ORB::create();
 
   cout << "Extracting ORB features..." << endl;
   for (const auto & entry : std::experimental::filesystem::directory_iterator(img_path)) {
     std::string img_name = entry.path();
+    img_names.push_back(img_name);
     cv::Mat image = cv::imread(img_name, 0);
     cv::Mat mask;
     vector<cv::KeyPoint> keypoints;
@@ -98,7 +104,7 @@ void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out)
 
 // ----------------------------------------------------------------------------
 
-void testVocCreation(const vector<vector<cv::Mat > > &features)
+void testVocCreation(const vector<vector<cv::Mat > > &features, const vector<string> &img_names)
 {
   // branching factor and depth levels 
   const int k = 9;
@@ -126,7 +132,7 @@ void testVocCreation(const vector<vector<cv::Mat > > &features)
       voc.transform(features[j], v2);
       
       double score = voc.score(v1, v2);
-      cout << "Image " << i << " vs Image " << j << ": " << score << endl;
+      cout << "Image " << img_names[i] << " vs Image " << img_names[j] << ": " << score << endl;
     }
   }
 
