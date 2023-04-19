@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <vector>
+#include <experimental/filesystem>
 
 // DBoW2
 #include "DBoW2.h" // defines OrbVocabulary and OrbDatabase
@@ -23,7 +24,7 @@ using namespace std;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-void loadFeatures(vector<vector<cv::Mat > > &features);
+void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path);
 void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out);
 void testVocCreation(const vector<vector<cv::Mat > > &features);
 void testDatabase(const vector<vector<cv::Mat > > &features);
@@ -44,10 +45,17 @@ void wait()
 
 // ----------------------------------------------------------------------------
 
-int main()
+int main(int argc, char* argv[])
 {
+  if (argc != 3) {
+    std::cout << "Usage: ./demo <IMG_DIR> <INCOMING_IMG>\n";
+    return -1;
+  }
+  std::string img_dir = argv[1];
+  std::string incoming_img = argv[2];
+
   vector<vector<cv::Mat > > features;
-  loadFeatures(features);
+  loadFeatures(features, img_dir);
 
   testVocCreation(features);
 
@@ -60,7 +68,7 @@ int main()
 
 // ----------------------------------------------------------------------------
 
-void loadFeatures(vector<vector<cv::Mat > > &features)
+void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path)
 {
   features.clear();
   features.reserve(NIMAGES);
@@ -68,12 +76,9 @@ void loadFeatures(vector<vector<cv::Mat > > &features)
   cv::Ptr<cv::ORB> orb = cv::ORB::create();
 
   cout << "Extracting ORB features..." << endl;
-  for(int i = 0; i < NIMAGES; ++i)
-  {
-    stringstream ss;
-    ss << "images/image" << i << ".png";
-
-    cv::Mat image = cv::imread(ss.str(), 0);
+  for (const auto & entry : std::experimental::filesystem::directory_iterator(img_path)) {
+    std::string img_name = entry.path();
+    cv::Mat image = cv::imread(img_name, 0);
     cv::Mat mask;
     vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
