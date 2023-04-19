@@ -129,10 +129,10 @@ void testVocCreation(
   // lets do something with this vocabulary
   cout << "Matching images against themselves (0 low, 1 high): " << endl;
   BowVector v1, v2;
-  for(int i = 0; i < target_imgs.size(); i++)
+  for(unsigned int i = 0; i < target_imgs.size(); i++)
   {
     voc.transform(target_imgs[i], v1);
-    for(int j = 0; j < memory_imgs.size(); j++)
+    for(unsigned int j = 0; j < memory_imgs.size(); j++)
     {
       voc.transform(memory_imgs[j], v2);
       
@@ -163,7 +163,7 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   // db creates a copy of the vocabulary, we may get rid of "voc" now
 
   // add images to the database
-  for(int i = 0; i < features.size(); i++)
+  for(unsigned int i = 0; i < features.size(); i++)
   {
     db.add(features[i]);
   }
@@ -176,7 +176,7 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   cout << "Querying the database: " << endl;
 
   QueryResults ret;
-  for(int i = 0; i < features.size(); i++)
+  for(unsigned int i = 0; i < features.size(); i++)
   {
     db.query(features[i], ret, 4);
 
