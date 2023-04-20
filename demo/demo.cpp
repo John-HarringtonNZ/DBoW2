@@ -27,7 +27,13 @@ using namespace std;
 void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path, vector<string> &img_names);
 void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out);
 void testVocCreation(const vector<vector<cv::Mat > > &memory_imgs, const vector<vector<cv::Mat > > &target_imgs, const vector<string> &memory_img_names, const vector<string> &target_img_names);
-void testDatabase(const vector<vector<cv::Mat > > &features);
+void testDatabase(
+  const vector<vector<cv::Mat > > &memory_imgs,
+  const vector<vector<cv::Mat > > &target_imgs,
+  const vector<string> &memory_img_names,
+  const vector<string> &target_img_names,
+  int top_n
+);
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -42,12 +48,13 @@ void wait()
 
 int main(int argc, char* argv[])
 {
-  if (argc != 3) {
-    std::cout << "Usage: ./demo <MEMORY_DIR> <TARGET_IMG_DIR>\n";
+  if (argc != 4) {
+    std::cout << "Usage: ./demo <MEMORY_DIR> <TARGET_IMG_DIR> <TOP_N>\n";
     return -1;
   }
   std::string memory_dir = argv[1];
   std::string target_dir = argv[2];
+  int top_n = stoi(argv[3]);
 
   vector<vector<cv::Mat > > memory;
   vector<string> memory_img_names;
@@ -60,7 +67,7 @@ int main(int argc, char* argv[])
 
   wait();
 
-  testDatabase(memory);
+  testDatabase(memory, targets, memory_img_names, target_img_names, top_n);
 
   return 0;
 }
@@ -149,7 +156,13 @@ void testVocCreation(
 
 // ----------------------------------------------------------------------------
 
-void testDatabase(const vector<vector<cv::Mat > > &features)
+void testDatabase(
+  const vector<vector<cv::Mat > > &memory_imgs,
+  const vector<vector<cv::Mat > > &target_imgs,
+  const vector<string> &memory_img_names,
+  const vector<string> &target_img_names,
+  int top_n
+)
 {
   cout << "Creating a small database..." << endl;
 
@@ -163,9 +176,9 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   // db creates a copy of the vocabulary, we may get rid of "voc" now
 
   // add images to the database
-  for(int i = 0; i < features.size(); i++)
+  for(int i = 0; i < memory_imgs.size(); i++)
   {
-    db.add(features[i]);
+    db.add(memory_imgs[i]);
   }
 
   cout << "... done!" << endl;
@@ -176,14 +189,14 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   cout << "Querying the database: " << endl;
 
   QueryResults ret;
-  for(int i = 0; i < features.size(); i++)
+  for(int i = 0; i < target_imgs.size(); i++)
   {
-    db.query(features[i], ret, 4);
+    db.query(target_imgs[i], ret, top_n);
 
     // ret[0] is always the same image in this case, because we added it to the 
     // database. ret[1] is the second best match.
 
-    cout << "Searching for Image " << i << ". " << ret << endl;
+    cout << "Searching for Target " << target_img_names[i] << ". " << ret << endl;
   }
 
   cout << endl;
