@@ -154,6 +154,21 @@ void testVocCreation(const vector<vector<cv::Mat > > &memory_imgs)
 
 // ----------------------------------------------------------------------------
 
+std::string get_file_name(std::string path) {
+  std::vector<std::string> parts;
+  std::string delimiter = "/";
+  size_t pos = 0;
+  std::string token;
+
+  while ((pos = path.find(delimiter)) != std::string::npos) {
+      token = path.substr(0, pos);
+      parts.push_back(token);
+      path.erase(0, pos + delimiter.length());
+  }
+
+  return path;
+}
+
 void testDatabase(
   const vector<vector<cv::Mat > > &memory_imgs,
   const vector<vector<cv::Mat > > &target_imgs,
@@ -204,14 +219,14 @@ void testDatabase(
 
     for (const auto &r : ret) {
       YAML::Node proposal;
-      std::cout << memory_img_names[r.Id] << " " << r.Score << std::endl;
-      proposal["file_name"] = memory_img_names[r.Id];
+      // std::cout << memory_img_names[r.Id] << " " << r.Score << std::endl;
+      proposal["file_name"] = get_file_name(memory_img_names[r.Id]);
       proposal["score"] = r.Score;
       proposals.push_back(proposal);
     }
 
     // Assign the list of objects to the target frame
-    data[target_img_names[i]] = proposals;
+    data[get_file_name(target_img_names[i])] = proposals;
   }
 
   cout << endl;
@@ -227,16 +242,16 @@ void testDatabase(
 
   cout << "YAML file has been emitted!" << endl;
 
-  // we can save the database. The created file includes the vocabulary
-  // and the entries added
-  cout << "Saving database..." << endl;
-  db.save("small_db.yml.gz");
-  cout << "... done!" << endl;
+  // // we can save the database. The created file includes the vocabulary
+  // // and the entries added
+  // cout << "Saving database..." << endl;
+  // db.save("small_db.yml.gz");
+  // cout << "... done!" << endl;
   
-  // once saved, we can load it again  
-  cout << "Retrieving database once again..." << endl;
-  OrbDatabase db2("small_db.yml.gz");
-  cout << "... done! This is: " << endl << db2 << endl;
+  // // once saved, we can load it again  
+  // cout << "Retrieving database once again..." << endl;
+  // OrbDatabase db2("small_db.yml.gz");
+  // cout << "... done! This is: " << endl << db2 << endl;
 }
 
 // ----------------------------------------------------------------------------
