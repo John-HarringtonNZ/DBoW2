@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 
   testVocCreation(memory, targets, memory_img_names, target_img_names);
 
-  wait();
+  // wait();
 
   testDatabase(memory, targets, memory_img_names, target_img_names, top_n);
 
@@ -134,19 +134,19 @@ void testVocCreation(
   << voc << endl << endl;
 
   // lets do something with this vocabulary
-  cout << "Matching images against themselves (0 low, 1 high): " << endl;
-  BowVector v1, v2;
-  for(unsigned int i = 0; i < target_imgs.size(); i++)
-  {
-    voc.transform(target_imgs[i], v1);
-    for(unsigned int j = 0; j < memory_imgs.size(); j++)
-    {
-      voc.transform(memory_imgs[j], v2);
+  // cout << "Matching images against themselves (0 low, 1 high): " << endl;
+  // BowVector v1, v2;
+  // for(unsigned int i = 0; i < target_imgs.size(); i++)
+  // {
+  //   voc.transform(target_imgs[i], v1);
+  //   for(unsigned int j = 0; j < memory_imgs.size(); j++)
+  //   {
+  //     voc.transform(memory_imgs[j], v2);
       
-      double score = voc.score(v1, v2);
-      cout << "Target " << target_img_names[i] << " vs Memory " << memory_img_names[j] << ": " << score << endl;
-    }
-  }
+  //     double score = voc.score(v1, v2);
+  //     cout << "Target " << target_img_names[i] << " vs Memory " << memory_img_names[j] << ": " << score << endl;
+  //   }
+  // }
 
   // save the vocabulary to disk
   cout << endl << "Saving vocabulary..." << endl;
