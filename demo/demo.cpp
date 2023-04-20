@@ -197,6 +197,9 @@ void testDatabase(
     // database. ret[1] is the second best match.
 
     cout << "Searching for Target " << target_img_names[i] << ". " << ret << endl;
+    for (const auto &r : ret) {
+      std::cout << memory_img_names[r.Id] << " " << r.Score << std::endl;
+    }
   }
 
   cout << endl;
