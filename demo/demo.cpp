@@ -26,7 +26,7 @@ using namespace std;
 
 void loadFeatures(vector<vector<cv::Mat > > &features, const std::string &img_path, vector<string> &img_names);
 void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out);
-void testVocCreation(const vector<vector<cv::Mat > > &memory_imgs, const vector<vector<cv::Mat > > &target_imgs, const vector<string> &memory_img_names, const vector<string> &target_img_names);
+void testVocCreation(const vector<vector<cv::Mat > > &memory_imgs);
 void testDatabase(
   const vector<vector<cv::Mat > > &memory_imgs,
   const vector<vector<cv::Mat > > &target_imgs,
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
   vector<string> target_img_names;
   loadFeatures(targets, target_dir, target_img_names);
 
-  testVocCreation(memory, targets, memory_img_names, target_img_names);
+  testVocCreation(memory);
 
   // wait();
 
@@ -112,11 +112,7 @@ void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out)
 
 // ----------------------------------------------------------------------------
 
-void testVocCreation(
-  const vector<vector<cv::Mat > > &memory_imgs,
-  const vector<vector<cv::Mat > > &target_imgs,
-  const vector<string> &memory_img_names,
-  const vector<string> &target_img_names)
+void testVocCreation(const vector<vector<cv::Mat > > &memory_imgs)
 {
   // branching factor and depth levels 
   const int k = 9;
