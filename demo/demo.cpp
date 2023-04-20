@@ -18,6 +18,8 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
 
+// YAML-CPP
+#include <yaml-cpp/yaml.h>
 
 using namespace DBoW2;
 using namespace std;
@@ -184,6 +186,9 @@ void testDatabase(
   // and query the database
   cout << "Querying the database: " << endl;
 
+  // Create a high-level YAML node, indexed by target image name
+  YAML::Node data;
+  
   QueryResults ret;
   for(unsigned int i = 0; i < target_imgs.size(); i++)
   {
@@ -193,12 +198,34 @@ void testDatabase(
     // database. ret[1] is the second best match.
 
     cout << "Searching for Target " << target_img_names[i] << ". " << ret << endl;
+
+    // Create a YAML node for top N proposal image names with scores
+    YAML::Node proposals;
+
     for (const auto &r : ret) {
+      YAML::Node proposal;
       std::cout << memory_img_names[r.Id] << " " << r.Score << std::endl;
+      proposal["file_name"] = memory_img_names[r.Id];
+      proposal["score"] = r.Score;
+      proposals.push_back(proposal);
     }
+
+    // Assign the list of objects to the target frame
+    data[target_img_names[i]] = proposals;
   }
 
   cout << endl;
+
+  // Open a file stream to write the YAML data
+  ofstream fout("output.yaml");
+
+  // Emit the YAML data to the file
+  fout << YAML::Dump(data);
+
+  // Close the file stream
+  fout.close();
+
+  cout << "YAML file has been emitted!" << endl;
 
   // we can save the database. The created file includes the vocabulary
   // and the entries added
