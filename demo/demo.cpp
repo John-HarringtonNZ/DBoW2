@@ -226,13 +226,21 @@ void testDatabase(
     for (const auto &r : ret) {
       YAML::Node proposal;
       // std::cout << memory_img_names[r.Id] << " " << r.Score << std::endl;
-      proposal["file_name"] = get_file_name(memory_img_names[r.Id]);
+      std::string file_name = get_file_name(memory_img_names[r.Id]);
+      size_t lastSlashPos = file_name.find_last_of('/');
+      std::string imageName = file_name.substr(lastSlashPos + 1);
+      proposal["file_name"] = imageName;
       proposal["score"] = r.Score;
       proposals.push_back(proposal);
     }
 
     // Assign the list of objects to the target frame
-    data[get_file_name(target_img_names[i])] = proposals;
+    // Find the last occurrence of the '/' character
+    std::string file_name = get_file_name(target_img_names[i]);
+    size_t lastSlashPos = file_name.find_last_of('/');
+    std::string imageName = file_name.substr(lastSlashPos + 1);
+
+    data[imageName] = proposals;
   }
 
   cout << endl;
