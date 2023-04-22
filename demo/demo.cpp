@@ -58,6 +58,9 @@ int main(int argc, char* argv[])
   std::string target_dir = argv[2];
   int top_n = stoi(argv[3]);
 
+  cout << memory_dir << endl;
+  cout << target_dir << endl;
+
   vector<vector<cv::Mat > > memory;
   vector<string> memory_img_names;
   loadFeatures(memory, memory_dir, memory_img_names);
@@ -177,29 +180,31 @@ void testDatabase(
   int top_n
 )
 {
-  cout << "Creating a small database..." << endl;
-
-  // load the vocabulary from disk
-  OrbVocabulary voc("small_voc.yml.gz");
-  
-  OrbDatabase db(voc, false, 0); // false = do not use direct index
-  // (so ignore the last param)
-  // The direct index is useful if we want to retrieve the features that 
-  // belong to some vocabulary node.
-  // db creates a copy of the vocabulary, we may get rid of "voc" now
-
-  // add images to the database
-  for(unsigned int i = 0; i < memory_imgs.size(); i++)
-  {
-    db.add(memory_imgs[i]);
+  OrbDatabase db;
+  OrbVocabulary voc;
+  // Check if the database already exists
+  if (std::experimental::filesystem::exists("small_db.yml.gz")) {
+    cout << "Loading previously generated database...";
+    db.load("small_db.yml.gz");
+    cout << "... done!" << endl;
   }
+  else {
+    // Otherwise create it
+    cout << "Creating database...";
+    voc.load("small_voc.yml.gz");
+    db = OrbDatabase(voc, false, 0);
 
-  cout << "... done!" << endl;
+    // add images to the database
+    for(unsigned int i = 0; i < memory_imgs.size(); i++)
+    {
+      db.add(memory_imgs[i]);
+    }
 
-  cout << "Database information: " << endl << db << endl;
-
-  // and query the database
-  cout << "Querying the database: " << endl;
+    // Save the database
+    cout << "Saving database..." << endl;
+    db.save("small_db.yml.gz");
+    cout << "... done!" << endl;
+  }
 
   // Create a high-level YAML node, indexed by target image name
   YAML::Node data;
@@ -209,8 +214,9 @@ void testDatabase(
   {
     db.query(target_imgs[i], ret, top_n);
 
-    // ret[0] is always the same image in this case, because we added it to the 
-    // database. ret[1] is the second best match.
+    if (ret.size() == 0) {
+      continue;
+    }
 
     cout << "Searching for Target " << target_img_names[i] << ". " << ret << endl;
 
@@ -241,17 +247,6 @@ void testDatabase(
   fout.close();
 
   cout << "YAML file has been emitted!" << endl;
-
-  // // we can save the database. The created file includes the vocabulary
-  // // and the entries added
-  // cout << "Saving database..." << endl;
-  // db.save("small_db.yml.gz");
-  // cout << "... done!" << endl;
-  
-  // // once saved, we can load it again  
-  // cout << "Retrieving database once again..." << endl;
-  // OrbDatabase db2("small_db.yml.gz");
-  // cout << "... done! This is: " << endl << db2 << endl;
 }
 
 // ----------------------------------------------------------------------------
